@@ -1,14 +1,7 @@
-﻿using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using RM.Api.Data;
-using RM.Api.Security;
 
 namespace RM.Api.Security
 {
@@ -32,7 +25,7 @@ namespace RM.Api.Security
         [HttpPost("login")]
         public async Task<ActionResult<AuthToken>> LoginAsync([FromBody] LoginDto model)
         {
-            if (model.Email.IsNullOrEmpty()) { return Unauthorized(); }
+            if (string.IsNullOrEmpty(model.Email)) { return Unauthorized(); }
 
             var normalizedEmail = string.Empty;
             try { normalizedEmail = Utilities.NormalizeEmailAddress(model.Email); }
