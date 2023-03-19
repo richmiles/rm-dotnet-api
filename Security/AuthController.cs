@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RM.Api.Data;
-using RM.Api.Security;
 
 namespace RM.Api.Security
 {
@@ -57,8 +56,8 @@ namespace RM.Api.Security
                 return BadRequest(new List<AuthError> { new("EmailAlreadyRegistered", "Email already registered") });
             }
 
-            string salt = BCrypt.Net.BCrypt.GenerateSalt();
-            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(model.Password, salt);
+            var salt = BCrypt.Net.BCrypt.GenerateSalt();
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(model.Password, salt);
 
             var user = new User(
                 model.Email,
@@ -80,7 +79,7 @@ namespace RM.Api.Security
         [HttpPost("refreshToken")]
         public async Task<IActionResult> RefreshTokenAsync([FromBody] AuthToken model)
         {
-            string existingToken = model.Token;
+            var existingToken = model.Token;
 
             if (string.IsNullOrEmpty(existingToken))
             {
