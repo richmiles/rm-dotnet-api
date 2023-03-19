@@ -15,7 +15,6 @@ namespace RM.Api.Data
             string nameFirst,
             string nameLast,
             string passwordHash,
-            string passwordSalt,
             DateTime dob,
             DateTime privacyOptinDate,
             DateTime? marketingOptinDate)
@@ -23,7 +22,6 @@ namespace RM.Api.Data
             Email = emailAddress;
             NormalizedEmailAddress = Utilities.NormalizeEmailAddress(emailAddress);
             PasswordHash = passwordHash;
-            PasswordSalt = passwordSalt;
             NameFirst = nameFirst;
             NameLast = nameLast;
             DOB = dob;
@@ -38,8 +36,6 @@ namespace RM.Api.Data
         public string NormalizedEmailAddress { get; set; } = string.Empty;
         [ProtectedPersonalData]
         public string PasswordHash { get; set; } = string.Empty;
-        [ProtectedPersonalData]
-        public string PasswordSalt { get; set; } = string.Empty;
 
         [ProtectedPersonalData]
         public string NameFirst { get; set; } = string.Empty;

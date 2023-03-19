@@ -17,8 +17,8 @@ namespace RM.Api.Security
     [ApiController]
     public class AuthController : ControllerBase
     {
-        AppDbContext _context;
-        ITokenService _tokenService;
+        private readonly AppDbContext _context;
+        private readonly ITokenService _tokenService;
 
         public AuthController(
             AppDbContext context,
@@ -30,7 +30,7 @@ namespace RM.Api.Security
 
         [AllowAnonymous]
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto model)
+        public async Task<ActionResult<AuthToken>> LoginAsync([FromBody] LoginDto model)
         {
             if (model.Email.IsNullOrEmpty()) { return Unauthorized(); }
 
@@ -40,11 +40,7 @@ namespace RM.Api.Security
 
 
             var user = await _context.Users.Where(u => u.NormalizedEmailAddress == normalizedEmail).FirstOrDefaultAsync();
-            if (user == null) { return Unauthorized(); }
-
-            string passwordHash = BCrypt.Net.BCrypt.HashPassword(model.Password, user.PasswordSalt);
-
-            if (passwordHash != user.PasswordHash) { return Unauthorized(); }
+            if (user == null || !BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash)) { return Unauthorized(); }
 
             var token = await _tokenService.GenerateTokenAsync(user);
             return Ok(token); ;
@@ -52,12 +48,9 @@ namespace RM.Api.Security
 
         [AllowAnonymous]
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto model)
+        public async Task<ActionResult<AuthToken>> RegisterAsync([FromBody] RegisterDto model)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            if (!ModelState.IsValid) { return BadRequest(ModelState); }
 
             if (!model.PrivacyOptin)
             {
@@ -78,7 +71,6 @@ namespace RM.Api.Security
 
             var user = new User(
                 model.Email,
-                salt,
                 hashedPassword,
                 model.NameFirst,
                 model.NameLast,
@@ -88,7 +80,7 @@ namespace RM.Api.Security
             _context.Add(user);
             await _context.SaveChangesAsync();
 
-    
+
             var token = await _tokenService.GenerateTokenAsync(user);
 
             return Ok(token);
@@ -110,7 +102,7 @@ namespace RM.Api.Security
                 var newToken = await _tokenService.RefreshTokenAsync(existingToken);
                 return Ok(newToken);
             }
-            catch(TokenException ex)
+            catch (TokenException ex)
             {
                 return BadRequest(new List<AuthError>() { new("InvalidToken", ex.Message) });
             }
