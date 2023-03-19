@@ -11,14 +11,14 @@ using RM.Api.Data;
 namespace rm_dotnet_api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230309215605_initial_migration")]
-    partial class initial_migration
+    [Migration("20230314153856_Initial-Migration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "7.0.3");
+            modelBuilder.HasAnnotation("ProductVersion", "7.0.4");
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
@@ -148,6 +148,9 @@ namespace rm_dotnet_api.Migrations
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime?>("MarketingOptinDate")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("NameFirst")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -172,6 +175,9 @@ namespace rm_dotnet_api.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("PrivacyOptinDate")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("TEXT");

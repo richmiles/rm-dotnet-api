@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace rm_dotnet_api.Migrations
 {
     /// <inheritdoc />
-    public partial class initial_migration : Migration
+    public partial class InitialMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -33,6 +33,8 @@ namespace rm_dotnet_api.Migrations
                     NameFirst = table.Column<string>(type: "TEXT", nullable: false),
                     NameLast = table.Column<string>(type: "TEXT", nullable: false),
                     DOB = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    PrivacyOptinDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    MarketingOptinDate = table.Column<DateTime>(type: "TEXT", nullable: true),
                     UserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),

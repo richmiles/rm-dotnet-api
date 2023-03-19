@@ -14,7 +14,9 @@ namespace RM.Api.Data
             string emailAddress,
             string nameFirst,
             string nameLast,
-            DateTime dob) 
+            DateTime dob,
+            DateTime privacyOptinDate,
+            DateTime? marketingOptinDate)
         {
             UserName = emailAddress;
             Email = emailAddress;
@@ -23,8 +25,13 @@ namespace RM.Api.Data
             DOB = dob;
         }
 
+        [ProtectedPersonalData]
         public string NameFirst { get; set; } = string.Empty;
-        public string NameLast { get; set;} = string.Empty;
+        [ProtectedPersonalData]
+        public string NameLast { get; set; } = string.Empty;
+        [ProtectedPersonalData]
         public DateTime DOB { get; set; }
+        public DateTime PrivacyOptinDate { get; set; }
+        public DateTime? MarketingOptinDate { get; set; }
     }
 }

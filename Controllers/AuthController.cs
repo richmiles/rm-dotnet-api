@@ -37,50 +37,16 @@ namespace RM.Api.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto model)
         {
-            if (model.Username.IsNullOrEmpty()) { return Unauthorized(); }
+            if (model.Email.IsNullOrEmpty()) { return Unauthorized(); }
 
-            var user = await _userManager.FindByNameAsync(model.Username);
-
-            if (user == null)
-            {
-                return Unauthorized();
-            }
+            var user = await _userManager.FindByNameAsync(model.Email);
+            if (user == null) { return Unauthorized(); }
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
+            if (!result.Succeeded) { return Unauthorized(); }
 
-            if (!result.Succeeded)
-            {
-                return Unauthorized();
-            }
-
-            var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserName!),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
-                signingCredentials: creds
-            );
-
-            return Ok(new
-            {
-
-                Id = user.Id!,
-                Email = user.Email!,
-                NameFirst = user.NameFirst!,
-                NameLast = user.NameLast!,
-                DOB = user.DOB,
-                Token = new JwtSecurityTokenHandler().WriteToken(token)
-
-            });
+            var token = GenerateJwtToken(user);
+            return Ok(BuildUserResponse(user, token)); ;
         }
 
         [AllowAnonymous]
@@ -92,37 +58,64 @@ namespace RM.Api.Controllers
                 return BadRequest(ModelState);
             }
 
-            var user = new User(model.Email, model.NameFirst, model.NameLast, model.DateOfBirth);
+            if (model.PrivacyOptin == false)
+            {
+                return BadRequest("Privacy Optin is required");
+            }
+
+            var user = new User(
+                model.Email,
+                model.NameFirst,
+                model.NameLast,
+                model.DOB,
+                privacyOptinDate: DateTime.UtcNow,
+                marketingOptinDate: model.MarketingOptin ? DateTime.UtcNow : null);
             var result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
             {
                 await _signInManager.SignInAsync(user, isPersistent: false);
+                var token = GenerateJwtToken(user);
 
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.ASCII.GetBytes(_configuration["Jwt:SecretKey"]!);
-                var tokenDescriptor = new SecurityTokenDescriptor
-                {
-                    Subject = new ClaimsIdentity(new[]
-                    {
-                new Claim(ClaimTypes.Name, user.Id.ToString())
-            }),
-                    Expires = DateTime.UtcNow.AddDays(7),
-                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-                };
-                var token = tokenHandler.CreateToken(tokenDescriptor);
-
-                return Ok(new
-                {
-                    Id = user.Id!,
-                    Email = user.Email!,
-                    NameFirst = user.NameFirst!,
-                    NameLast = user.NameLast!,
-                    DOB = user.DOB,
-                    Token = tokenHandler.WriteToken(token)
-                });
+                return Ok(BuildUserResponse(user, token));
             }
 
             return BadRequest(result.Errors);
         }
+
+        private JwtSecurityToken GenerateJwtToken(User user)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Email!),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:SecretKey"]!));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            return new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(1),
+                signingCredentials: creds
+            );
+        }
+
+        private object BuildUserResponse(User user, JwtSecurityToken token)
+        {
+            return new
+            {
+                user.Id,
+                user.Email,
+                user.NameFirst,
+                user.NameLast,
+                user.DOB,
+                Token = new JwtSecurityTokenHandler().WriteToken(token)
+            };
+        }
+
     }
+
+
 }

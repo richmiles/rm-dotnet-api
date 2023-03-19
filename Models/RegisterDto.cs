@@ -13,6 +13,10 @@ namespace rm_dotnet_api.Models
         [Required]
         public string NameLast { get; set; } = string.Empty;
         [Required]
-        public DateTime DateOfBirth { get; set; }
+        public DateTime DOB { get; set; }
+        [Required]
+        public bool PrivacyOptin { get; set; }
+        [Required]
+        public bool MarketingOptin { get; set; }
     }
 }

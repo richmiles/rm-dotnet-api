@@ -15,7 +15,7 @@ namespace rm_dotnet_api.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "7.0.3");
+            modelBuilder.HasAnnotation("ProductVersion", "7.0.4");
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
@@ -145,6 +145,9 @@ namespace rm_dotnet_api.Migrations
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime?>("MarketingOptinDate")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("NameFirst")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -169,6 +172,9 @@ namespace rm_dotnet_api.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("PrivacyOptinDate")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("TEXT");
