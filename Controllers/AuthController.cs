@@ -52,7 +52,7 @@ namespace RM.Api.Controllers
         [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
-        {
+            {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -115,7 +115,46 @@ namespace RM.Api.Controllers
             };
         }
 
+        [AllowAnonymous]
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterDto model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var user = new User(model.Email, model.NameFirst, model.NameLast, model.DateOfBirth);
+            var result = await _userManager.CreateAsync(user, model.Password);
+            if (result.Succeeded)
+            {
+                await _signInManager.SignInAsync(user, isPersistent: false);
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.ASCII.GetBytes(_configuration["Jwt:SecretKey"]!);
+                var tokenDescriptor = new SecurityTokenDescriptor
+                {
+                    Subject = new ClaimsIdentity(new[]
+                    {
+                new Claim(ClaimTypes.Name, user.Id.ToString())
+            }),
+                    Expires = DateTime.UtcNow.AddDays(7),
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                };
+                var token = tokenHandler.CreateToken(tokenDescriptor);
+
+                return Ok(new
+                {
+                    Id = user.Id!,
+                    Email = user.Email!,
+                    NameFirst = user.NameFirst!,
+                    NameLast = user.NameLast!,
+                    DOB = user.DOB,
+                    Token = tokenHandler.WriteToken(token)
+                });
+            }
+
+            return BadRequest(result.Errors);
+        }
     }
-
-
 }
