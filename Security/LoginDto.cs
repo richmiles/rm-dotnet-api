@@ -1,4 +1,4 @@
-﻿namespace rm_dotnet_api.Models
+﻿namespace RM.Api.Security
 {
     public class LoginDto
     {

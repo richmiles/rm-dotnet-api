@@ -5,7 +5,7 @@
     using System.Reflection.Emit;
     using System.Xml;
 
-    public class AppDbContext : IdentityDbContext<User, UserRole, Guid>
+    public class AppDbContext : DbContext
     {
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
@@ -23,5 +23,9 @@
         {
             base.OnModelCreating(modelBuilder);
         }
+
+        public DbSet<User> Users { get; set; }
+        public DbSet<UserRole> UserRoles { get; set; }
+        public DbSet<UserToken> UserTokens { get; set; }
     }
 }

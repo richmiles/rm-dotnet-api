@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace rm_dotnet_api.Models
+namespace RM.Api.Security
 {
     public class RegisterDto
     {

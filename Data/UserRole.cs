@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,8 @@ using System.Threading.Tasks;
 
 namespace RM.Api.Data
 {
-    public class UserRole : IdentityRole<Guid>
+    public class UserRole : ModelBase
     {
+
     }
 }

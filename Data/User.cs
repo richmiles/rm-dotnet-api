@@ -7,23 +7,39 @@ using System.Threading.Tasks;
 
 namespace RM.Api.Data
 {
-    public class User : IdentityUser<Guid>
+    public class User : ModelBase
     {
         public User() { }
         public User(
             string emailAddress,
             string nameFirst,
             string nameLast,
+            string passwordHash,
+            string passwordSalt,
             DateTime dob,
             DateTime privacyOptinDate,
             DateTime? marketingOptinDate)
         {
-            UserName = emailAddress;
             Email = emailAddress;
+            NormalizedEmailAddress = Utilities.NormalizeEmailAddress(emailAddress);
+            PasswordHash = passwordHash;
+            PasswordSalt = passwordSalt;
             NameFirst = nameFirst;
             NameLast = nameLast;
             DOB = dob;
+            PrivacyOptinDate = privacyOptinDate;
+            MarketingOptinDate = marketingOptinDate;
         }
+
+        [ProtectedPersonalData]
+        public string Email { get; set; } = string.Empty;
+
+        [ProtectedPersonalData]
+        public string NormalizedEmailAddress { get; set; } = string.Empty;
+        [ProtectedPersonalData]
+        public string PasswordHash { get; set; } = string.Empty;
+        [ProtectedPersonalData]
+        public string PasswordSalt { get; set; } = string.Empty;
 
         [ProtectedPersonalData]
         public string NameFirst { get; set; } = string.Empty;
