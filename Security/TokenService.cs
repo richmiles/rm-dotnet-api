@@ -27,14 +27,14 @@ namespace RM.Api.Security
             {
                 UserId = user.Id,
                 Token = token,
-                ExpirationUtc = DateTime.UtcNow.AddDays(2)
+                ExpirationUtc = DateTime.UtcNow.AddMinutes(10)
             };
 
             using var dbContext = _dbContextFactory.CreateDbContext();
             dbContext.UserTokens.Add(userToken);
             await dbContext.SaveChangesAsync();
 
-            return new AuthToken(token, userToken.ExpirationUtc);
+            return new AuthToken(token, (int)(userToken.ExpirationUtc - DateTime.UtcNow).TotalSeconds);
         }
 
         public async Task<AuthToken> RefreshTokenAsync(string existingToken)
@@ -42,16 +42,23 @@ namespace RM.Api.Security
             // Find the user token in the database
             using var dbContext = _dbContextFactory.CreateDbContext();
             var userToken = await dbContext.UserTokens
-                .FirstOrDefaultAsync(ut => ut.Token == existingToken && ut.ExpirationUtc > DateTime.UtcNow);
+                .FirstOrDefaultAsync(ut => ut.Token == existingToken);
 
             if (userToken == null)
             {
                 throw new TokenException("Invalid or expired token.");
             }
 
-            // Expire the existing User Token
-            userToken.ExpirationUtc = DateTime.UtcNow;
-            dbContext.Update(userToken);
+            if(userToken.ExpirationUtc < DateTime.UtcNow.AddDays(2)) 
+            {
+                // Delete the existing User Token
+                dbContext.Remove(existingToken);
+                await dbContext.SaveChangesAsync();
+                throw new TokenException("Token is not eligible for refresh."); 
+            }
+
+            // Delete the existing User Token
+            dbContext.Remove(existingToken);
             await dbContext.SaveChangesAsync();
 
             // Generate a cryptographically strong random token
@@ -63,11 +70,11 @@ namespace RM.Api.Security
             {
                 UserId = userToken.UserId,
                 Token = newToken,
-                ExpirationUtc = DateTime.UtcNow.AddDays(2)
+                ExpirationUtc = DateTime.UtcNow.AddMinutes(10)
             };
 
             // Return the new token value
-            return new AuthToken(newToken, newUserToken.ExpirationUtc);
+            return new AuthToken(newToken, (int)(newUserToken.ExpirationUtc - DateTime.UtcNow).TotalSeconds);
         }
 
         public async Task<ClaimsPrincipal> ValidateTokenAsync(string authToken)

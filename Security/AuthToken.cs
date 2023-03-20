@@ -10,12 +10,12 @@ namespace RM.Api.Security
     public class AuthToken
     {
         public AuthToken(string token,
-            DateTime expirationDateTimeUtc)
+            int expiresIn)
         {
             Token = token;
-            ExpirationDateTimeUtc = expirationDateTimeUtc;
+            ExpiresIn = expiresIn;
         }
         public string Token { get; set; }
-        public DateTime ExpirationDateTimeUtc { get; set; }
+        public long ExpiresIn { get; set; }
     }
 }
