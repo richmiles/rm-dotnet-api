@@ -1,10 +1,7 @@
-﻿namespace RM.Api.Data
-{
-    using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-    using Microsoft.EntityFrameworkCore;
-    using System.Reflection.Emit;
-    using System.Xml;
+﻿using Microsoft.EntityFrameworkCore;
 
+namespace RM.Api.Data
+{
     public class AppDbContext : DbContext
     {
 

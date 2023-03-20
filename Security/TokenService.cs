@@ -7,11 +7,11 @@ namespace RM.Api.Security
 {
     public class TokenService : ITokenService
     {
-        private readonly AppDbContext _context;
+        private readonly IAppDbContextFactory _dbContextFactory;
 
-        public TokenService(AppDbContext context)
+        public TokenService(IAppDbContextFactory dbContextFactory)
         {
-            _context = context;
+            _dbContextFactory = dbContextFactory;
         }
 
         public async Task<AuthToken> GenerateTokenAsync(User user)
@@ -30,8 +30,9 @@ namespace RM.Api.Security
                 ExpirationUtc = DateTime.UtcNow.AddDays(2)
             };
 
-            _context.UserTokens.Add(userToken);
-            await _context.SaveChangesAsync();
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            dbContext.UserTokens.Add(userToken);
+            await dbContext.SaveChangesAsync();
 
             return new AuthToken(token, userToken.ExpirationUtc);
         }
@@ -39,7 +40,8 @@ namespace RM.Api.Security
         public async Task<AuthToken> RefreshTokenAsync(string existingToken)
         {
             // Find the user token in the database
-            var userToken = await _context.UserTokens
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            var userToken = await dbContext.UserTokens
                 .FirstOrDefaultAsync(ut => ut.Token == existingToken && ut.ExpirationUtc > DateTime.UtcNow);
 
             if (userToken == null)
@@ -49,8 +51,8 @@ namespace RM.Api.Security
 
             // Expire the existing User Token
             userToken.ExpirationUtc = DateTime.UtcNow;
-            _context.Update(userToken);
-            await _context.SaveChangesAsync();
+            dbContext.Update(userToken);
+            await dbContext.SaveChangesAsync();
 
             // Generate a cryptographically strong random token
             using var rng = RandomNumberGenerator.Create();
@@ -71,8 +73,8 @@ namespace RM.Api.Security
         public async Task<ClaimsPrincipal> ValidateTokenAsync(string authToken)
         {
             // Find the token in the UserTokens DbSet
-            var userToken = await _context.UserTokens
-                .Include(ut => ut.User)
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            var userToken = await dbContext.UserTokens
                 .FirstOrDefaultAsync(ut => ut.Token == authToken && ut.ExpirationUtc > DateTime.UtcNow);
 
             if (userToken == null)
@@ -80,11 +82,12 @@ namespace RM.Api.Security
                 throw new TokenException("User Token not found.");
             }
 
+            var user = await dbContext.Users.FirstAsync(u => u.Id == userToken.UserId);
             // Create a ClaimsIdentity with the user's claims
             var claims = new[]
             {
             new Claim(ClaimTypes.NameIdentifier, userToken.UserId.ToString()),
-            new Claim(ClaimTypes.Email, userToken.User.Email)
+            new Claim(ClaimTypes.Email, user.Email)
         };
 
             var identity = new ClaimsIdentity(claims, "Token");

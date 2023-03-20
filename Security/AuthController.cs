@@ -61,10 +61,10 @@ namespace RM.Api.Security
 
             var user = new User(
                 model.Email,
-                hashedPassword,
-                model.NameFirst,
-                model.NameLast,
-                model.DOB,
+                passwordHash: hashedPassword,
+                nameFirst: model.NameFirst,
+                nameLast: model.NameLast,
+                dob: model.DOB,
                 privacyOptinDate: DateTime.UtcNow,
                 marketingOptinDate: model.MarketingOptin ? DateTime.UtcNow : null);
 

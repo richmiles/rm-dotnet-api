@@ -12,9 +12,9 @@ namespace RM.Api.Data
         public User() { }
         public User(
             string emailAddress,
+            string passwordHash,
             string nameFirst,
             string nameLast,
-            string passwordHash,
             DateTime dob,
             DateTime privacyOptinDate,
             DateTime? marketingOptinDate)

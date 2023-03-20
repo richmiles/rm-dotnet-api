@@ -3,6 +3,6 @@
     public class ModelBase
     {
         public Guid Id { get; set; } = Guid.NewGuid();
-        public DateTime TimestampUtc { get; set; }
+        public DateTime TimestampUtc { get; set; } = DateTime.UtcNow;
     }
 }
