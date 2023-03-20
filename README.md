@@ -21,7 +21,7 @@ Code first migrations are setup. If you want to modify the migrations for your p
 Keys for the tables are set to GUIDs. This is a personal preference and can be changed to whatever you want.
 
 ### Identity
-The project is setup to use the default ASP.NET Core Identity system. The full set of Identity configuration options are set to the defaults in appsettings.json.
+The project uses a custom _opaque_ token provider. The token simply consists of a unique identifer and an expiration date.  The same user can have multiple tokens to support logging into different devices without logging out of the original device. 
 
 ## Running the project
 The project can be run using the dotnet CLI.
